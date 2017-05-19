@@ -24,14 +24,14 @@ describe("froala", function () {
         viewHtml = "<div froala-view='content'></div>";
     }));
 
-    var compileElement = function (extraSetup) {
+    var compileElement = function (extraSetup, html) {
         setupFroalaEditorStub();
         populateScope($rootScope);
         if (extraSetup && typeof extraSetup === 'function') {
             extraSetup();
         }
 
-        element = $compile(elementHtml)($rootScope);
+        element = $compile(html || elementHtml)($rootScope);
     };
 
     var compileViewElement = function () {
@@ -61,7 +61,7 @@ describe("froala", function () {
     };
 
     var createEditorInManualMode = function (moreFroalaOptions) {
-        elementHtml = "<div froala='froalaOptions' ng-model='content' froala-init='initEditor(initControls)'></div>";
+        var elementHtml = "<div froala='froalaOptions' ng-model='content' froala-init='initEditor(initControls)'></div>";
         compileElement(function () {
             $rootScope.initEditor = function (initControls) {
                 $rootScope.initControls = initControls;
@@ -69,7 +69,7 @@ describe("froala", function () {
                 $rootScope.froalaOptions = angular.extend($rootScope.froalaOptions, moreFroalaOptions);
 
             };
-        });
+        }, elementHtml);
     };
 
     it('Requires ngModel attribute', function () {
@@ -110,15 +110,6 @@ describe("froala", function () {
         expect($rootScope.froalaOptions.froalaEditor).toBeDefined();
     });
 
-    it('Considers tags with whitespaces as empty content', function () {
-        elementHtml = "<input froala='froalaOptions' ng-model='content' required/>";
-        compileElement();
-
-        $rootScope.content = '   <i>      </i>  ';
-        $rootScope.$digest();
-
-        expect(element.attr('class')).toContain('ng-invalid');
-    });
 
     it('Registers the Key Up event', function () {
         $rootScope.froalaOptions = {immediateAngularModelUpdate: true};
@@ -134,11 +125,10 @@ describe("froala", function () {
         expect(froalaEditorOnStub.args.length).toEqual(0);
     });
 
-    it('Destroys editor when directive is destroyed', function () {
+    fit('Destroys editor when directive is destroyed', function () {
         compileElement();
 
         $rootScope.$destroy();
-
         expect(froalaEditorStub.args[1][0]).toEqual('destroy');
     });
 

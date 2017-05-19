@@ -29,7 +29,7 @@ value('froalaConfig', {})
         link: function (scope, element, attrs, ngModel) {
 
             var specialTag = false;
-            if (SPECIAL_TAGS.indexOf(element.prop("tagName").toLowerCase()) != -1) {
+            if (SPECIAL_TAGS.indexOf(element.prop("tagName").toLowerCase()) !== -1) {
                 specialTag = true;
             }
 
@@ -59,7 +59,7 @@ value('froalaConfig', {})
                             // add tags on element
                             if (tags) {
                                 for (var attr in tags) {
-                                    if (tags.hasOwnProperty(attr) && attr != innerHtmlAttr) {
+                                    if (tags.hasOwnProperty(attr) && attr !== innerHtmlAttr) {
                                         element.attr(attr, tags[attr]);
                                     }
                                 }
@@ -100,7 +100,7 @@ value('froalaConfig', {})
                     var flushNgModel = function() {
                         ctrl.editorInitialized = true;
                         ngModel.$render();
-                    }
+                    };
 
                     if (specialTag) {
                         // flush before editor is initialized
@@ -142,6 +142,7 @@ value('froalaConfig', {})
                 });
 
                 element.bind('$destroy', function () {
+                    console.log('destroy');
                     element.off(ctrl.listeningEvents.join(" "));
                     element.froalaEditor('destroy');
                     element = null;
@@ -158,7 +159,7 @@ value('froalaConfig', {})
 
                     for (var i = 0; i < attributeNodes.length; i++ ) {
                         var attrName = attributeNodes[i].name;
-                        if (ctrl.options.angularIgnoreAttrs && ctrl.options.angularIgnoreAttrs.indexOf(attrName) != -1) {
+                        if (ctrl.options.angularIgnoreAttrs && ctrl.options.angularIgnoreAttrs.indexOf(attrName) !== -1) {
                             continue;
                         }
                         attrs[attrName] = attributeNodes[i].value;
@@ -204,6 +205,11 @@ value('froalaConfig', {})
                 scope.initFunction({initControls: controls});
             }
             ctrl.init();
+
+
+            scope.$on('$destroy', function() {
+                element.remove();
+            });
         }
     };
 }])

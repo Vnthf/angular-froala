@@ -125,7 +125,7 @@ describe("froala", function () {
         expect(froalaEditorOnStub.args.length).toEqual(0);
     });
 
-    fit('Destroys editor when directive is destroyed', function () {
+    it('Destroys editor when directive is destroyed', function () {
         compileElement();
 
         $rootScope.$destroy();
@@ -147,12 +147,12 @@ describe("froala", function () {
 
     it('Updates the model after the froala editor content has changed', function () {
         compileElement(function () {
-            froalaEditorStub.onSecondCall().returns('My String');
+            froalaEditorStub.onCall(6).returns('My String');
         });
-
+        element.trigger('froalaEditor.initialized');
         element.trigger('froalaEditor.contentChanged');
-        $rootScope.$digest();
 
+        $rootScope.$digest();
         expect($rootScope.content).toEqual('My String');
     });
 
@@ -181,6 +181,33 @@ describe("froala", function () {
         element.trigger('froalaEditor.focus');
 
         expect(callbackSpy.called).toBeTruthy();
+    });
+
+    it('Not trigger contentChanged When ng model first set', function () {
+        var callbackSpy = sinon.spy();
+        compileElement(function () {
+            $rootScope.content = 'abcabc';
+            froalaEditorStub.onSecondCall().returns('My String');
+            $rootScope.froalaOptions.events = {
+                'froalaEditor.contentChanged': callbackSpy
+            };
+        });
+        element.trigger('froalaEditor.initialized');
+
+        expect(callbackSpy.called).toBeFalsy();
+    });
+
+    it('call completeSetInitialValue callback after set ng model', function () {
+        var callbackSpy = sinon.spy();
+        $rootScope.content = 'My String';
+        compileElement(function () {
+            $rootScope.completeSetInitialValue = callbackSpy;
+            froalaEditorStub.onCall(4).returns('My String');
+        }, "<div froala='froalaOptions' froala-complete-set-init-value='completeSetInitialValue(editor)' ng-model='content'></div>");
+        element.trigger('froalaEditor.initialized');
+
+        expect(callbackSpy.called).toBeTruthy();
+        expect($rootScope.content).toEqual('My String');
     });
 
     it('Does not initialize the editor when in manual mode', function () {
@@ -214,7 +241,7 @@ describe("froala", function () {
 
         $rootScope.initControls.initialize();
 
-        expect(froalaEditorStub.callCount).toEqual(4); // 1 for creating editor and 3 after initialized event
+        expect(froalaEditorStub.callCount).toEqual(5); // 1 for creating editor and 3 after initialized event
     });
 
     it('Can re-initialize the editor after closing it', function () {
@@ -292,14 +319,14 @@ describe("froala", function () {
 
     });
 
-	it('Sets the view to the value of the model', function () {
-				$rootScope.content = '<i>New Text</i>';
+    it('Sets the view to the value of the model', function () {
+        $rootScope.content = '<i>New Text</i>';
 
-				compileViewElement();
-				$rootScope.$digest();
+        compileViewElement();
+        $rootScope.$digest();
 
-      	expect(view.html()).toEqual("<i>New Text</i>");
-	});
+        expect(view.html()).toEqual("<i>New Text</i>");
+    });
 
     it('Sets options when the editor is instantiated manually', function () {
         createEditorInManualMode();

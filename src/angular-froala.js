@@ -12,7 +12,8 @@ value('froalaConfig', {})
 
     var scope = {
         froalaOptions: '=froala',
-        initFunction: '&froalaInit'
+        initFunction: '&froalaInit',
+        completeSetInitValue: '&froalaCompleteSetInitValue'
     };
 
     froalaConfig = froalaConfig || {};
@@ -34,7 +35,8 @@ value('froalaConfig', {})
             }
 
             var ctrl = {
-                editorInitialized: false
+                editorInitialized: false,
+                firstInitialized: false
             };
 
             scope.initMode = attrs.froalaInit ? MANUAL : AUTOMATIC;
@@ -72,6 +74,19 @@ value('froalaConfig', {})
                             //This will reset the undo stack everytime the model changes externally. Can we fix this?
                             element.froalaEditor('undo.reset');
                             element.froalaEditor('undo.saveStep');
+
+                            if(!ctrl.firstInitialized) {
+                                ctrl.firstInitialized = true;
+                                ngModel.$setViewValue(element.froalaEditor('html.get'));
+                                if (!scope.$root.$$phase) {
+                                    scope.$apply();
+                                }
+                                scope.completeSetInitValue({editor: element.froalaEditor()});
+
+                                element.on('froalaEditor.contentChanged', function () {
+                                    scope.$evalAsync(ctrl.updateModelView);
+                                });
+                            }
                         }
                     }
                 };
@@ -101,7 +116,6 @@ value('froalaConfig', {})
                         ctrl.editorInitialized = true;
                         ngModel.$render();
                     };
-
                     if (specialTag) {
                         // flush before editor is initialized
                         flushNgModel();
@@ -137,12 +151,11 @@ value('froalaConfig', {})
                     });
                 }
 
-                element.on('froalaEditor.contentChanged', function () {
-                    scope.$evalAsync(ctrl.updateModelView);
-                });
+                //element.on('froalaEditor.contentChanged', function () {
+                //    scope.$evalAsync(ctrl.updateModelView);
+                //});
 
                 element.bind('$destroy', function () {
-                    console.log('destroy');
                     element.off(ctrl.listeningEvents.join(" "));
                     element.froalaEditor('destroy');
                     element = null;

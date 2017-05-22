@@ -81,7 +81,7 @@ value('froalaConfig', {})
                                 if (!scope.$root.$$phase) {
                                     scope.$apply();
                                 }
-                                scope.completeSetInitValue({editor: element.froalaEditor()});
+                                scope.completeSetInitValue({editor: element.data('froala.editor')});
 
                                 element.on('froalaEditor.contentChanged', function () {
                                     scope.$evalAsync(ctrl.updateModelView);

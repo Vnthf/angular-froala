@@ -221,7 +221,7 @@ value('froalaConfig', {})
 
 
             scope.$on('$destroy', function() {
-                element.remove();
+                element && element.remove();
             });
         }
     };
